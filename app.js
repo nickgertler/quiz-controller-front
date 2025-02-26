@@ -1,4 +1,4 @@
-// Set this to your Heroku API endpoint:
+// Replace this with your Heroku URL
 const API_BASE = 'https://quiz-controller-api-f86ea1ce8663.herokuapp.com';
 
 const screenStart    = document.getElementById('screenStart');
@@ -7,136 +7,123 @@ const screenResults  = document.getElementById('screenResults');
 const screenCredits  = document.getElementById('screenCredits');
 
 const startBtn       = document.getElementById('startBtn');
-const seeResultsBtn  = document.getElementById('seeResultsBtn');
-const nextQuestionBtn= document.getElementById('nextQuestionBtn');
+const showResultsBtn = document.getElementById('showResultsBtn');
+const nextBtn        = document.getElementById('nextBtn');
 
 const questionTitle  = document.getElementById('questionTitle');
 const answersList    = document.getElementById('answersList');
 const resultsBox     = document.getElementById('resultsBox');
 
-// We'll load all questions up front and keep track of which question index we are on.
-let questions = []; // array of Airtable records
-let currentIndex = 0; // index in the questions array
+// We'll store the full list of questions in an array, sorted by Question Number.
+let questions = [];
+let currentIndex = 0; // which question (by array index) we're on
 
-async function initQuiz() {
-  // 1) Fetch the full list of questions (sorted by question number)
-  const resp = await fetch(`${API_BASE}/questions`);
-  questions = await resp.json();
-
-  // If no questions found, just show an error message
-  if (!questions.length) {
-    alert('No quiz questions found.');
-    return;
+// 1) On page load, fetch the question list and show the Start screen
+async function init() {
+  try {
+    const resp = await fetch(`${API_BASE}/questions`);
+    questions = await resp.json();
+  } catch (err) {
+    console.error('Error loading questions:', err);
+    alert('Could not load questions from server!');
   }
-
-  // Show start screen
+  // Show the Start screen
   showScreen('start');
 }
 
-// Show a given screen by ID
-function showScreen(name) {
-  // hide all
+// 2) Show a specific screen, hide others
+function showScreen(screenName) {
   screenStart.classList.add('hidden');
   screenQuestion.classList.add('hidden');
   screenResults.classList.add('hidden');
   screenCredits.classList.add('hidden');
 
-  // show the selected
-  if (name === 'start') {
-    screenStart.classList.remove('hidden');
-  } else if (name === 'question') {
-    screenQuestion.classList.remove('hidden');
-  } else if (name === 'results') {
-    screenResults.classList.remove('hidden');
-  } else if (name === 'credits') {
-    screenCredits.classList.remove('hidden');
-  }
+  if (screenName === 'start')    screenStart.classList.remove('hidden');
+  if (screenName === 'question') screenQuestion.classList.remove('hidden');
+  if (screenName === 'results')  screenResults.classList.remove('hidden');
+  if (screenName === 'credits')  screenCredits.classList.remove('hidden');
 }
 
-// Display a particular question in the question screen
-async function loadQuestion(index) {
-  const record = questions[index];
-  if (!record) {
-    // If we run out of questions, go to credits
+// 3) Load and display the question at `questions[currentIndex]`
+function loadQuestion() {
+  // If we've run past the last question, show credits
+  if (currentIndex >= questions.length) {
     showScreen('credits');
     return;
   }
-
-  const qNum = record.fields['Question Number'];
-  // Optionally fetch the question details from the server:
-  // (But we already have it in 'record.fields', so you might skip this extra call.)
-  // const questionRes = await fetch(`${API_BASE}/question/${qNum}`);
-  // const questionData = await questionRes.json();
-
-  // For brevity, let's use the data we already have in record.fields
+  const record = questions[currentIndex];
   const fields = record.fields;
-  questionTitle.innerText = `Q${fields['Question Number']}: ${fields['Question']}`;
-  
-  // Show answers 1-4
+  const qNum = fields['Question Number'];
+  questionTitle.innerText = `Question ${qNum}: ${fields['Question'] || ''}`;
+
+  // Show the four answers
   answersList.innerHTML = '';
   for (let i = 1; i <= 4; i++) {
-    const text = fields[`Answer ${i}`] || '';
-    if (text) {
+    const answerText = fields[`Answer ${i}`] || '';
+    if (answerText) {
       const div = document.createElement('div');
-      div.innerText = `Answer ${i}: ${text}`;
+      div.innerText = `Answer ${i}: ${answerText}`;
       answersList.appendChild(div);
     }
   }
 
+  // Switch to question screen
   showScreen('question');
 }
 
-// Display results for a particular question
-async function loadResults(index) {
-  const record = questions[index];
-  if (!record) {
-    // If no record, show credits
+// 4) Load results for the current question
+async function loadResults() {
+  if (currentIndex >= questions.length) {
+    // If no question left, go to credits
     showScreen('credits');
     return;
   }
-
+  const record = questions[currentIndex];
   const qNum = record.fields['Question Number'];
 
-  // Hit /results/:num to get aggregated results
-  const resp = await fetch(`${API_BASE}/results/${qNum}`);
-  const data = await resp.json();
-  if (data.error) {
-    resultsBox.innerHTML = `<p>${data.error}</p>`;
-  } else {
-    // Build a small HTML to show the question, answers, correct answer, and vote counts
-    let html = `<h3>Q${data.questionNumber}: ${data.question}</h3>`;
-    html += `<p><b>Correct Answer:</b> ${data.correctAnswer}</p>`;
-    html += `<ul>`;
-    for (let i = 1; i <= 4; i++) {
-      if (data.answers[i]) {
-        html += `<li>Answer ${i}: ${data.answers[i]} — Votes: ${data.results[i]}</li>`;
+  try {
+    const resp = await fetch(`${API_BASE}/results/${qNum}`);
+    const data = await resp.json();
+
+    if (data.error) {
+      resultsBox.innerHTML = `<p>${data.error}</p>`;
+    } else {
+      const { question, correctAnswer, answers, votes } = data;
+      let html = `<p><strong>Q${data.questionNumber}:</strong> ${question}</p>`;
+      html += `<p><strong>Correct Answer:</strong> ${correctAnswer}</p>`;
+      html += `<ul>`;
+      for (let i = 1; i <= 4; i++) {
+        const ansText = answers[i] || '';
+        if (ansText) {
+          html += `<li>Answer ${i}: ${ansText} — Votes: ${votes[i]}</li>`;
+        }
       }
+      html += `</ul>`;
+      resultsBox.innerHTML = html;
     }
-    html += `</ul>`;
-    resultsBox.innerHTML = html;
+  } catch (err) {
+    resultsBox.innerHTML = `<p>Error fetching results: ${err}</p>`;
   }
 
+  // Switch to results screen
   showScreen('results');
 }
 
-// Button events
+// Button Handlers
 startBtn.addEventListener('click', () => {
   currentIndex = 0;
-  loadQuestion(currentIndex);
+  loadQuestion();
 });
 
-seeResultsBtn.addEventListener('click', () => {
-  loadResults(currentIndex);
+showResultsBtn.addEventListener('click', () => {
+  loadResults();
 });
 
-nextQuestionBtn.addEventListener('click', () => {
+nextBtn.addEventListener('click', () => {
+  // After seeing results, move to the next question
   currentIndex++;
-  if (currentIndex < questions.length) {
-    loadQuestion(currentIndex);
-  } else {
-    showScreen('credits'); 
-  }
+  loadQuestion();
 });
 
-// On page load, initialize
-initQuiz();
+// Initialize on page load
+init();

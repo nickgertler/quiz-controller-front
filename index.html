@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
+  <meta charset="utf-8" />
   <title>Quiz Controller</title>
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
 
@@ -15,24 +15,22 @@
 
   <!-- Question Screen -->
   <div id="screenQuestion" class="screen hidden">
-    <div id="questionBox">
-      <h2 id="questionTitle">Question goes here</h2>
-      <div id="answersList"></div>
-    </div>
-    <button id="seeResultsBtn">See Results</button>
+    <h2 id="questionTitle"></h2>
+    <div id="answersList"></div>
+    <button id="showResultsBtn">Show Results</button>
   </div>
 
   <!-- Results Screen -->
   <div id="screenResults" class="screen hidden">
-    <h2>Results</h2>
+    <h2>Question Results</h2>
     <div id="resultsBox"></div>
-    <button id="nextQuestionBtn">Next Question</button>
+    <button id="nextBtn">Next Question</button>
   </div>
 
   <!-- Credits Screen -->
   <div id="screenCredits" class="screen hidden">
-    <h2>Thanks for playing!</h2>
-    <p>This is the end of the quiz. Credits go here.</p>
+    <h2>End of Quiz</h2>
+    <p>Thanks for playing! Add credits here.</p>
   </div>
 
   <script src="app.js"></script>
