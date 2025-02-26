@@ -1,21 +1,39 @@
 <!DOCTYPE html>
-<html lang="EN">
+<html lang="en">
 <head>
-  <meta charset="utf-8"/>
+  <meta charset="utf-8">
   <title>Quiz Controller</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div class="container">
-    <div class="question-container">
-      <h1 id="questionText">Loading question...</h1>
-    </div>
-    <div class="answers-container">
-      <div id="answers"></div>
-    </div>
+
+  <!-- Start Screen -->
+  <div id="screenStart" class="screen">
+    <h1>Welcome to Our Quiz!</h1>
+    <button id="startBtn">Start Quiz</button>
   </div>
 
-  <button id="nextQuestionBtn">Next Question</button>
+  <!-- Question Screen -->
+  <div id="screenQuestion" class="screen hidden">
+    <div id="questionBox">
+      <h2 id="questionTitle">Question goes here</h2>
+      <div id="answersList"></div>
+    </div>
+    <button id="seeResultsBtn">See Results</button>
+  </div>
+
+  <!-- Results Screen -->
+  <div id="screenResults" class="screen hidden">
+    <h2>Results</h2>
+    <div id="resultsBox"></div>
+    <button id="nextQuestionBtn">Next Question</button>
+  </div>
+
+  <!-- Credits Screen -->
+  <div id="screenCredits" class="screen hidden">
+    <h2>Thanks for playing!</h2>
+    <p>This is the end of the quiz. Credits go here.</p>
+  </div>
 
   <script src="app.js"></script>
 </body>
