@@ -1,0 +1,48 @@
+body {
+    margin: 0;
+    font-family: sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .container {
+    width: 90%;
+    margin-top: 40px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+  }
+  
+  /* Large question on the left */
+  .question-container {
+    flex: 1;
+    text-align: left;
+    margin-right: 20px;
+  }
+  
+  #questionText {
+    font-size: 3rem;
+    line-height: 1.2;
+  }
+  
+  /* Answers on the right */
+  .answers-container {
+    flex: 1;
+    text-align: left;
+  }
+  
+  .answers-container div {
+    margin-bottom: 10px;
+    font-size: 1.3rem;
+  }
+  
+  /* Next Question button */
+  #nextQuestionBtn {
+    margin: 30px;
+    padding: 10px 20px;
+    font-size: 1.2rem;
+    cursor: pointer;
+  }
+  
