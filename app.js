@@ -1,5 +1,5 @@
 // Set this to your Heroku API endpoint:
-const API_BASE = 'https://quiz-controller-api-f86ea1ce8663.herokuapp.com/';
+const API_BASE = 'https://quiz-controller-api-f86ea1ce8663.herokuapp.com';
 
 const questionText = document.getElementById('questionText');
 const answersDiv = document.getElementById('answers');
