@@ -35,3 +35,21 @@ button {
   max-width: 500px;
   margin-top: 10px;
 }
+
+/* Example table styling */
+.results-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+}
+
+.results-table th,
+.results-table td {
+  border: 1px solid #ccc;
+  padding: 8px;
+}
+
+.correct-answer {
+  background-color: #d1ffd1; /* light green highlight */
+  font-weight: bold;
+}
