@@ -157,7 +157,7 @@ showResultsBtn.addEventListener('click', async () => {
     }
 
     // Build answer boxes with flex row for text vs. votes
-    let html = `<h3>Q${data.questionNumber}: ${data.question}</h3>`;
+    let html = `<h1 id="questionTitle" class="question-heading">Q${data.questionNumber}: ${data.question}</h1>`;
     html += `<div class=\"answers-container\">`;
 
     for (let i = 1; i <= 4; i++) {

@@ -41,7 +41,6 @@ body {
 .question-heading {
   font-size: 1.8rem;
   color: #1a1a1a;
-  margin-bottom: 20px;
   text-shadow: 1px 1px 0 #fff;
 }
 
@@ -51,7 +50,8 @@ body {
   flex-direction: column;
   gap: 15px;
   margin: 20px auto;
-  width: 90%;
+  margin-top: 0px;
+  width: 95%;
 }
 .answer-box, .result-box {
   border: 3px solid #ffd700;
@@ -68,11 +68,9 @@ body {
   justify-content: space-between;
   align-items: center;
 }
-.answer-text {
-  font-weight: bold;
-}
+
 .vote-count {
-  font-weight: normal;
+  font-weight: bold;
   font-style: italic;
   color: #555;
 }
