@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
   <meta charset="utf-8">
   <title>Quiz Controller</title>
@@ -8,14 +8,21 @@
 </head>
 <body>
 
-  <!-- Session Setup Screen -->
+  <!-- Screen: Session Setup -->
   <div id="screenSession" class="screen">
     <h1>Start or Load a Session</h1>
     <input type="text" id="sessionNameInput" placeholder="Session Name" />
     <button id="createSessionBtn">Create / Load Session</button>
   </div>
 
-  <!-- Question Screen (shows question text/answers, button to see results) -->
+  <!-- Screen: Start Quiz -->
+  <div id="screenStart" class="screen hidden">
+    <h2>Session: <span id="sessionLabelStart"></span></h2>
+    <p>Quiz not started yet. Click below to start!</p>
+    <button id="startQuizBtn">Start Quiz</button>
+  </div>
+
+  <!-- Screen: Question -->
   <div id="screenQuestion" class="screen hidden">
     <h2>Session: <span id="sessionLabelQ"></span></h2>
     <h3 id="questionTitle"></h3>
@@ -23,14 +30,14 @@
     <button id="showResultsBtn">Show Results</button>
   </div>
 
-  <!-- Results Screen (shows tallies, button to next question) -->
+  <!-- Screen: Results -->
   <div id="screenResults" class="screen hidden">
     <h2>Session: <span id="sessionLabelR"></span></h2>
     <div id="resultsBox"></div>
     <button id="nextQuestionBtn">Next Question</button>
   </div>
 
-  <!-- Credits (end of quiz) -->
+  <!-- Screen: Credits -->
   <div id="screenCredits" class="screen hidden">
     <h2>End of Quiz</h2>
     <p>All questions completed!</p>

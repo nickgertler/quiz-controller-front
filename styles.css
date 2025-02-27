@@ -15,7 +15,7 @@ body {
   display: none;
 }
 
-input[type=\"text\"] {
+input[type="text"] {
   padding: 8px;
   font-size: 1rem;
 }
@@ -27,36 +27,20 @@ button {
   margin: 10px;
 }
 
-
-h1, h2 {
-  margin-bottom: 20px;
-}
-
-#answersList, #resultsBox {
+#answersBox {
+  margin: 15px auto;
   text-align: left;
-  margin: 0 auto;
   background: #f9f9f9;
   border: 1px solid #ccc;
   padding: 15px;
   max-width: 500px;
-  margin-top: 10px;
 }
 
-/* Example table styling */
-.results-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 1rem;
-}
-
-.results-table th,
-.results-table td {
+#resultsBox {
+  margin: 15px auto;
+  text-align: left;
+  background: #f9f9f9;
   border: 1px solid #ccc;
-  padding: 8px;
+  padding: 15px;
+  max-width: 500px;
 }
-
-.correct-answer {
-  background-color: #d1ffd1; /* light green highlight */
-  font-weight: bold;
-}
-
