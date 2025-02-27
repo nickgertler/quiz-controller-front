@@ -1,147 +1,166 @@
-// Replace this with your Heroku URL
+// Replace with your Heroku server URL:
 const API_BASE = 'https://quiz-controller-api-f86ea1ce8663.herokuapp.com';
 
-const screenStart    = document.getElementById('screenStart');
-const screenQuestion = document.getElementById('screenQuestion');
-const screenResults  = document.getElementById('screenResults');
-const screenCredits  = document.getElementById('screenCredits');
+const screenSession    = document.getElementById('screenSession');
+const screenController = document.getElementById('screenController');
+const screenCredits    = document.getElementById('screenCredits');
 
-const startBtn       = document.getElementById('startBtn');
-const showResultsBtn = document.getElementById('showResultsBtn');
-const nextBtn        = document.getElementById('nextBtn');
+const sessionNameInput = document.getElementById('sessionNameInput');
+const createSessionBtn = document.getElementById('createSessionBtn');
 
-const questionTitle  = document.getElementById('questionTitle');
-const answersList    = document.getElementById('answersList');
-const resultsBox     = document.getElementById('resultsBox');
+const sessionLabel     = document.getElementById('sessionLabel');
+const questionTitle    = document.getElementById('questionTitle');
+const resultsBox       = document.getElementById('resultsBox');
 
-// We'll store the full list of questions in an array, sorted by Question Number.
-let questions = [];
-let currentIndex = 0; // which question (by array index) we're on
+const startQuizBtn     = document.getElementById('startQuizBtn');
+const nextQuestionBtn  = document.getElementById('nextQuestionBtn');
 
-// 1) On page load, fetch the question list and show the Start screen
-async function init() {
-  try {
-    const resp = await fetch(`${API_BASE}/questions`);
-    questions = await resp.json();
-  } catch (err) {
-    console.error('Error loading questions:', err);
-    alert('Could not load questions from server!');
-  }
-  // Show the Start screen
-  showScreen('start');
-}
+// We'll keep track of the session name, plus the current question number
+let sessionName = '';
+let currentQuestionNumber = 0; // 0 => not started
 
-// 2) Show a specific screen, hide others
-function showScreen(screenName) {
-  screenStart.classList.add('hidden');
-  screenQuestion.classList.add('hidden');
-  screenResults.classList.add('hidden');
+// Show/hide screens
+function showScreen(name) {
+  screenSession.classList.add('hidden');
+  screenController.classList.add('hidden');
   screenCredits.classList.add('hidden');
 
-  if (screenName === 'start')    screenStart.classList.remove('hidden');
-  if (screenName === 'question') screenQuestion.classList.remove('hidden');
-  if (screenName === 'results')  screenResults.classList.remove('hidden');
-  if (screenName === 'credits')  screenCredits.classList.remove('hidden');
+  if (name === 'session')    screenSession.classList.remove('hidden');
+  if (name === 'controller') screenController.classList.remove('hidden');
+  if (name === 'credits')    screenCredits.classList.remove('hidden');
 }
 
-// 3) Load and display the question at `questions[currentIndex]`
-function loadQuestion() {
-  // If we've run past the last question, show credits
-  if (currentIndex >= questions.length) {
-    showScreen('credits');
+// On page load
+document.addEventListener('DOMContentLoaded', () => {
+  showScreen('session');
+});
+
+// 1) Create or Load Session
+createSessionBtn.addEventListener('click', async () => {
+  const entered = sessionNameInput.value.trim();
+  if (!entered) {
+    alert('Please enter a session name');
     return;
   }
-  const record = questions[currentIndex];
-  const fields = record.fields;
-  const qNum = fields['Question Number'];
-  questionTitle.innerText = `Question ${qNum}: ${fields['Question'] || ''}`;
+  sessionName = entered;
 
-  // Show the four answers
-  answersList.innerHTML = '';
-  for (let i = 1; i <= 4; i++) {
-    const answerText = fields[`Answer ${i}`] || '';
-    if (answerText) {
-      const div = document.createElement('div');
-      div.innerText = `Answer ${i}: ${answerText}`;
-      answersList.appendChild(div);
-    }
-  }
-
-  // Switch to question screen
-  showScreen('question');
-}
-
-// 4) Load results for the current question
-async function loadResults() {
-  if (currentIndex >= questions.length) {
-    // If no question left, show credits
-    showScreen('credits');
-    return;
-  }
-  const record = questions[currentIndex];
-  const qNum = record.fields['Question Number'];
-
+  // 1A) Attempt to create session by calling POST /session
+  // If it already exists, Airtable won't necessarily error, or you might get duplicates
+  // so consider searching first. For simplicity, let's just do a create call each time:
   try {
-    const resp = await fetch(`${API_BASE}/results/${qNum}`);
+    await fetch(`${API_BASE}/session`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sessionName })
+    });
+    // Then load the session from the server to see current question
+    await loadSessionData();
+    sessionLabel.innerText = sessionName;
+    showScreen('controller');
+    renderController();
+  } catch (err) {
+    console.error('Error creating session:', err);
+    alert('Could not create/load session. Check console.');
+  }
+});
+
+// 2) Load Session Data
+async function loadSessionData() {
+  // GET /session/:sessionName to see the current question
+  const resp = await fetch(`${API_BASE}/session/${sessionName}`);
+  const data = await resp.json();
+  if (data.error) {
+    throw new Error(data.error);
+  }
+  currentQuestionNumber = data.fields['Current Question'] || 0;
+}
+
+// Show or hide startQuizBtn depending on whether currentQuestionNumber is 0
+function renderController() {
+  if (currentQuestionNumber === 0) {
+    startQuizBtn.classList.remove('hidden');
+    nextQuestionBtn.classList.add('hidden');
+    questionTitle.innerText = 'Quiz not started yet.';
+    resultsBox.innerHTML = '';
+  } else {
+    startQuizBtn.classList.add('hidden');
+    nextQuestionBtn.classList.remove('hidden');
+    loadResultsForCurrentQuestion();
+  }
+}
+
+// 3) Start Quiz => sets question # to 1
+startQuizBtn.addEventListener('click', async () => {
+  try {
+    // If question # = 0, let's move to #1
+    await fetch(`${API_BASE}/session/${sessionName}/next`, {
+      method: 'POST'
+    });
+    await loadSessionData();
+    renderController();
+  } catch (err) {
+    console.error('Error starting quiz:', err);
+  }
+});
+
+// 4) Next Question => increments question #
+nextQuestionBtn.addEventListener('click', async () => {
+  try {
+    await fetch(`${API_BASE}/session/${sessionName}/next`, {
+      method: 'POST'
+    });
+    await loadSessionData();
+    // If we get back a question # that doesn't exist in the Quiz table => end
+    // We'll detect that in loadResultsForCurrentQuestion
+    renderController();
+  } catch (err) {
+    console.error('Error moving to next question:', err);
+  }
+});
+
+// 5) Load and display results for current question
+async function loadResultsForCurrentQuestion() {
+  // If currentQuestionNumber is 0 => quiz not started
+  if (currentQuestionNumber === 0) {
+    questionTitle.innerText = 'Quiz not started.';
+    resultsBox.innerHTML = '';
+    return;
+  }
+
+  // We'll call GET /results/:num => returns question text, answers, correct answer, votes
+  try {
+    const resp = await fetch(`${API_BASE}/results/${currentQuestionNumber}`);
+    if (resp.status === 404) {
+      // Means no question found => we've passed the last question => show credits
+      showScreen('credits');
+      return;
+    }
     const data = await resp.json();
     if (data.error) {
-      resultsBox.innerHTML = `<p>${data.error}</p>`;
-    } else {
-      // data structure: { questionNumber, question, answers, correctAnswer, votes }
-      const { questionNumber, question, answers, correctAnswer, votes } = data;
-
-      let html = `
-        <h3>Q${questionNumber}: ${question}</h3>
-        <table class="results-table">
-          <thead>
-            <tr>
-              <th>Answer</th>
-              <th>Votes</th>
-            </tr>
-          </thead>
-          <tbody>
-      `;
-      for (let i = 1; i <= 4; i++) {
-        if (!answers[i]) continue; // skip blank answers
-        const isCorrect = (i.toString() === correctAnswer.toString());
-        // Apply a highlight class if this row is correct
-        html += `
-          <tr class="${isCorrect ? 'correct-answer' : ''}">
-            <td>Answer ${i}: ${answers[i]}</td>
-            <td>${votes[i] || 0}</td>
-          </tr>
-        `;
-      }
-      html += `
-          </tbody>
-        </table>
-      `;
-      resultsBox.innerHTML = html;
+      // Possibly no question found, or other error
+      showScreen('credits');
+      return;
     }
+
+    // We have question data
+    questionTitle.innerText = `Q${data.questionNumber}: ${data.question}`;
+    let html = `<p><strong>Correct Answer:</strong> ${data.correctAnswer}</p>`;
+    html += `<table class=\"results-table\" style=\"width:100%; border-collapse: collapse;\">`;
+    html += `<thead><tr><th>Answer</th><th>Votes</th></tr></thead><tbody>`;
+
+    for (let i = 1; i <= 4; i++) {
+      if (!data.answers[i]) continue;
+      const highlight = (i.toString() === data.correctAnswer.toString())
+        ? 'background-color: #d1ffd1;'
+        : '';
+      html += `<tr style=\"${highlight}\"><td>Answer ${i}: ${data.answers[i]}</td><td>${data.votes[i] || 0}</td></tr>`;
+    }
+
+    html += `</tbody></table>`;
+    resultsBox.innerHTML = html;
   } catch (err) {
-    resultsBox.innerHTML = `<p>Error fetching results: ${err}</p>`;
+    console.error('Error loading results:', err);
+    // If we can't load for any reason, just show credits
+    showScreen('credits');
   }
-
-  // Switch to results screen
-  showScreen('results');
 }
-
-
-// Button Handlers
-startBtn.addEventListener('click', () => {
-  currentIndex = 0;
-  loadQuestion();
-});
-
-showResultsBtn.addEventListener('click', () => {
-  loadResults();
-});
-
-nextBtn.addEventListener('click', () => {
-  // After seeing results, move to the next question
-  currentIndex++;
-  loadQuestion();
-});
-
-// Initialize on page load
-init();

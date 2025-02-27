@@ -1,36 +1,35 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
+  <meta charset="utf-8">
   <title>Quiz Controller</title>
-  <link rel="stylesheet" href="styles.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
-  <!-- Start Screen -->
-  <div id="screenStart" class="screen">
-    <h1>Welcome to Our Quiz!</h1>
-    <button id="startBtn">Start Quiz</button>
+  <!-- Session Setup Screen -->
+  <div id="screenSession" class="screen">
+    <h1>Start or Load a Session</h1>
+    <input type="text" id="sessionNameInput" placeholder="Session Name" />
+    <button id="createSessionBtn">Create / Load Session</button>
   </div>
 
-  <!-- Question Screen -->
-  <div id="screenQuestion" class="screen hidden">
-    <h2 id="questionTitle"></h2>
-    <div id="answersList"></div>
-    <button id="showResultsBtn">Show Results</button>
+  <!-- Controller Screen -->
+  <div id="screenController" class="screen hidden">
+    <h2>Session: <span id="sessionLabel"></span></h2>
+    <div id="questionContainer">
+      <h3 id="questionTitle"></h3>
+      <div id="resultsBox"></div>
+    </div>
+    <button id="startQuizBtn" class="hidden">Start Quiz</button>
+    <button id="nextQuestionBtn">Next Question</button>
   </div>
 
-  <!-- Results Screen -->
-  <div id="screenResults" class="screen hidden">
-    <h2>Question Results</h2>
-    <div id="resultsBox"></div>
-    <button id="nextBtn">Next Question</button>
-  </div>
-
-  <!-- Credits Screen -->
+  <!-- Credits Screen (End of Quiz) -->
   <div id="screenCredits" class="screen hidden">
     <h2>End of Quiz</h2>
-    <p>Thanks for playing! Add credits here.</p>
+    <p>All questions completed!</p>
   </div>
 
   <script src="app.js"></script>
