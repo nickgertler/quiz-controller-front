@@ -1,46 +1,46 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>Quiz Controller</title>
+  <title>Baby, do you know your mother?!</title>
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
+  <!-- Footer with session name -->
+  <footer id="sessionFooter"></footer>
+
   <!-- Screen: Session Setup -->
   <div id="screenSession" class="screen">
-    <h1>Start or Load a Session</h1>
+    <h1 class="quiz-title">🦜🦆🐓🦩</h1>
     <input type="text" id="sessionNameInput" placeholder="Session Name" />
-    <button id="createSessionBtn">Create / Load Session</button>
+    <button id="createSessionBtn">Onward!</button>
   </div>
 
   <!-- Screen: Start Quiz -->
   <div id="screenStart" class="screen hidden">
-    <h2>Session: <span id="sessionLabelStart"></span></h2>
-    <p>Quiz not started yet. Click below to start!</p>
-    <button id="startQuizBtn">Start Quiz</button>
+    <h1 class="quiz-title">Baby, do you know your mother?!</h1>
+    <button id="startQuizBtn">Let's Find Out</button>
   </div>
 
   <!-- Screen: Question -->
   <div id="screenQuestion" class="screen hidden">
-    <h2>Session: <span id="sessionLabelQ"></span></h2>
-    <h3 id="questionTitle"></h3>
-    <div id="answersBox"></div>
-    <button id="showResultsBtn">Show Results</button>
+    <h1 id="questionTitle" class="question-heading"></h1>
+    <div id="answersBox" class="answers-container"></div>
+    <button id="showResultsBtn" class="action-btn">Show Results</button>
   </div>
 
   <!-- Screen: Results -->
   <div id="screenResults" class="screen hidden">
-    <h2>Session: <span id="sessionLabelR"></span></h2>
-    <div id="resultsBox"></div>
-    <button id="nextQuestionBtn">Next Question</button>
+    <div id="resultsBox" class="answers-container"></div>
+    <button id="nextQuestionBtn" class="action-btn">Next Question</button>
   </div>
 
   <!-- Screen: Credits -->
   <div id="screenCredits" class="screen hidden">
-    <h2>End of Quiz</h2>
-    <p>All questions completed!</p>
+    <h1>That's all folks!</h1>
+    <p>⚠️ Dashboard under construction ⚠️</p>
   </div>
 
   <script src="app.js"></script>

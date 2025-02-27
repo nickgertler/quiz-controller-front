@@ -1,30 +1,28 @@
 // Replace with your Heroku server URL:
 const API_BASE = 'https://quiz-controller-api-f86ea1ce8663.herokuapp.com';
 
+// Footer for session name
+const sessionFooter = document.getElementById('sessionFooter');
+
 // Screens
-const screenSession  = document.getElementById('screenSession');
-const screenStart    = document.getElementById('screenStart');
-const screenQuestion = document.getElementById('screenQuestion');
-const screenResults  = document.getElementById('screenResults');
-const screenCredits  = document.getElementById('screenCredits');
+const screenSession   = document.getElementById('screenSession');
+const screenStart     = document.getElementById('screenStart');
+const screenQuestion  = document.getElementById('screenQuestion');
+const screenResults   = document.getElementById('screenResults');
+const screenCredits   = document.getElementById('screenCredits');
 
 // Controls
-const sessionNameInput = document.getElementById('sessionNameInput');
-const createSessionBtn = document.getElementById('createSessionBtn');
+const sessionNameInput= document.getElementById('sessionNameInput');
+const createSessionBtn= document.getElementById('createSessionBtn');
+const startQuizBtn    = document.getElementById('startQuizBtn');
 
-const sessionLabelStart= document.getElementById('sessionLabelStart');
-const startQuizBtn     = document.getElementById('startQuizBtn');
+// Question / Results
+const questionTitle   = document.getElementById('questionTitle');
+const answersBox      = document.getElementById('answersBox');
+const showResultsBtn  = document.getElementById('showResultsBtn');
+const resultsBox      = document.getElementById('resultsBox');
+const nextQuestionBtn = document.getElementById('nextQuestionBtn');
 
-const sessionLabelQ    = document.getElementById('sessionLabelQ');
-const questionTitle    = document.getElementById('questionTitle');
-const answersBox       = document.getElementById('answersBox');
-const showResultsBtn   = document.getElementById('showResultsBtn');
-
-const sessionLabelR    = document.getElementById('sessionLabelR');
-const resultsBox       = document.getElementById('resultsBox');
-const nextQuestionBtn  = document.getElementById('nextQuestionBtn');
-
-// State
 let sessionName = '';
 let currentQuestion = 0; // numeric
 
@@ -43,7 +41,7 @@ function showScreen(name) {
   if (name === 'credits')  screenCredits.classList.remove('hidden');
 }
 
-// On page load, go to session screen
+// On load
 document.addEventListener('DOMContentLoaded', () => {
   showScreen('session');
 });
@@ -57,20 +55,22 @@ createSessionBtn.addEventListener('click', async () => {
   }
   sessionName = entered;
   try {
-    // Create session => sets Current Question=0 if it doesn't exist
+    // Create session => sets Current Question=0 if not existing
     await fetch(`${API_BASE}/session`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ sessionName })
     });
-    // Then load session data
     await loadSessionData();
-    // If currentQuestion=0 => show screenStart
+
+    // Put session name in the small footer
+    sessionFooter.textContent = `Session: ${sessionName}`;
+
+    // If currentQuestion=0 => show Start screen
     if (currentQuestion === 0) {
-      sessionLabelStart.textContent = sessionName;
       showScreen('start');
     } else {
-      // Otherwise, show question
+      // Otherwise, jump to the question screen
       showQuestionScreen();
     }
   } catch (err) {
@@ -79,7 +79,7 @@ createSessionBtn.addEventListener('click', async () => {
   }
 });
 
-// 2) Load session data => GET /session/:sessionName
+// 2) loadSessionData => get Current Question
 async function loadSessionData() {
   const resp = await fetch(`${API_BASE}/session/${sessionName}`);
   const data = await resp.json();
@@ -92,37 +92,28 @@ async function loadSessionData() {
 // 3) Start quiz => sets question from 0 to 1
 startQuizBtn.addEventListener('click', async () => {
   try {
-    // POST /session/:sessionName/next => increments question from 0 to 1
     const resp = await fetch(`${API_BASE}/session/${sessionName}/next`, { method: 'POST' });
-    const data = await resp.json();
-    if (data.error) {
-      throw new Error(data.error);
+    const json = await resp.json();
+    if (json.error) {
+      throw new Error(json.error);
     }
-    currentQuestion = data.newCurrentQuestion;
-    // Now load the new question
-    await showQuestionScreen();
+    currentQuestion = json.newCurrentQuestion;
+    showQuestionScreen();
   } catch (err) {
     console.error('Error starting quiz:', err);
-    alert('Unable to start the quiz. Check console.');
+    alert('Unable to start quiz. Check console.');
   }
 });
 
-// 4) Show question screen => fetch from /question/:num
+// 4) Show question => fetch /question/:num
 async function showQuestionScreen() {
-  sessionLabelQ.textContent = sessionName;
-
-  // If we somehow still have question=0 => show start screen
   if (currentQuestion === 0) {
-    sessionLabelStart.textContent = sessionName;
     showScreen('start');
     return;
   }
-
-  // Attempt to fetch the question
   try {
     const resp = await fetch(`${API_BASE}/question/${currentQuestion}`);
     if (resp.status === 404) {
-      // No question => quiz ended
       showScreen('credits');
       return;
     }
@@ -132,15 +123,18 @@ async function showQuestionScreen() {
       return;
     }
 
-    questionTitle.innerText = `Q${qData.questionNumber}: ${qData.question}`;
-    const arr = [];
+    questionTitle.textContent = `Q${qData.questionNumber}: ${qData.question}`;
+    answersBox.innerHTML = '';
+
+    // Show each answer in a box
     for (let i = 1; i <= 4; i++) {
       if (qData.answers[i]) {
-        arr.push(`<div>Answer ${i}: ${qData.answers[i]}</div>`);
+        const div = document.createElement('div');
+        div.className = 'answer-box';
+        div.textContent = `${qData.answers[i]}`;
+        answersBox.appendChild(div);
       }
     }
-    answersBox.innerHTML = arr.join('');
-
     showScreen('question');
   } catch (err) {
     console.error('Error fetching question:', err);
@@ -148,9 +142,8 @@ async function showQuestionScreen() {
   }
 }
 
-// 5) Show results => GET /results/:num
+// 5) Show results => calls /results/:num
 showResultsBtn.addEventListener('click', async () => {
-  sessionLabelR.textContent = sessionName;
   try {
     const resp = await fetch(`${API_BASE}/results/${currentQuestion}`);
     if (resp.status === 404) {
@@ -162,19 +155,26 @@ showResultsBtn.addEventListener('click', async () => {
       showScreen('credits');
       return;
     }
-    // Build simple results table
+
+    // Build answer boxes with flex row for text vs. votes
     let html = `<h3>Q${data.questionNumber}: ${data.question}</h3>`;
-    html += `<p><strong>Correct Answer:</strong> ${data.correctAnswer}</p>`;
-    html += `<table style=\"width:100%; border-collapse: collapse;\">`;
-    html += `<thead><tr><th>Answer</th><th>Votes</th></tr></thead><tbody>`;
+    html += `<div class=\"answers-container\">`;
+
     for (let i = 1; i <= 4; i++) {
       if (!data.answers[i]) continue;
-      const highlight = (i.toString() === data.correctAnswer.toString()) ? 'background-color:#d1ffd1;' : '';
-      html += `<tr style=\"${highlight}\"><td>Answer ${i}: ${data.answers[i]}</td><td>${data.votes[i] || 0}</td></tr>`;
+      // highlight correct if needed
+      const highlight = (i.toString() === data.correctAnswer.toString()) ? 'background-color:#c8ffca;' : '';
+      html += `
+        <div class="result-box" style="${highlight}">
+          <div class="result-row">
+            <div class="answer-text">${data.answers[i]}</div>
+            <div class="vote-count">${data.votes[i] || 0} votes</div>
+          </div>
+        </div>`;
     }
-    html += `</tbody></table>`;
-    resultsBox.innerHTML = html;
+    html += `</div>`;
 
+    resultsBox.innerHTML = html;
     showScreen('results');
   } catch (err) {
     console.error('Error fetching results:', err);
@@ -182,17 +182,16 @@ showResultsBtn.addEventListener('click', async () => {
   }
 });
 
-// 6) Next Question => increments question # again
+// 6) Next Question => increments question number
 nextQuestionBtn.addEventListener('click', async () => {
   try {
     const resp = await fetch(`${API_BASE}/session/${sessionName}/next`, { method: 'POST' });
-    const data = await resp.json();
-    if (data.error) {
-      throw new Error(data.error);
+    const json = await resp.json();
+    if (json.error) {
+      throw new Error(json.error);
     }
-    currentQuestion = data.newCurrentQuestion;
-    // If we moved beyond the last question => show credits
-    await showQuestionScreen();
+    currentQuestion = json.newCurrentQuestion;
+    showQuestionScreen();
   } catch (err) {
     console.error('Error going to next question:', err);
     showScreen('credits');
