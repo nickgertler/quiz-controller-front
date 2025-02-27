@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <title>Quiz Controller</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -15,18 +15,22 @@
     <button id="createSessionBtn">Create / Load Session</button>
   </div>
 
-  <!-- Controller Screen -->
-  <div id="screenController" class="screen hidden">
-    <h2>Session: <span id="sessionLabel"></span></h2>
-    <div id="questionContainer">
-      <h3 id="questionTitle"></h3>
-      <div id="resultsBox"></div>
-    </div>
-    <button id="startQuizBtn" class="hidden">Start Quiz</button>
+  <!-- Question Screen (shows question text/answers, button to see results) -->
+  <div id="screenQuestion" class="screen hidden">
+    <h2>Session: <span id="sessionLabelQ"></span></h2>
+    <h3 id="questionTitle"></h3>
+    <div id="answersBox"></div>
+    <button id="showResultsBtn">Show Results</button>
+  </div>
+
+  <!-- Results Screen (shows tallies, button to next question) -->
+  <div id="screenResults" class="screen hidden">
+    <h2>Session: <span id="sessionLabelR"></span></h2>
+    <div id="resultsBox"></div>
     <button id="nextQuestionBtn">Next Question</button>
   </div>
 
-  <!-- Credits Screen (End of Quiz) -->
+  <!-- Credits (end of quiz) -->
   <div id="screenCredits" class="screen hidden">
     <h2>End of Quiz</h2>
     <p>All questions completed!</p>
