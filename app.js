@@ -62,15 +62,15 @@ createSessionBtn.addEventListener('click', async () => {
       body: JSON.stringify({ sessionName })
     });
     await loadSessionData();
-
-    // Put session name in the small footer
-    sessionFooter.textContent = `Session: ${sessionName}`;
-
     // If currentQuestion=0 => show Start screen
     if (currentQuestion === 0) {
+      // Put session name in the start screen session ID prompt
+      sessionIDPrompt.textContent = `Session: ${sessionName}`;
       showScreen('start');
     } else {
       // Otherwise, jump to the question screen
+      // Put session name in the start screen session ID prompt
+      sessionFooter.textContent = `Session: ${sessionName}`;
       showQuestionScreen();
     }
   } catch (err) {
@@ -135,6 +135,8 @@ async function showQuestionScreen() {
         answersBox.appendChild(div);
       }
     }
+    // Put session name in the small footer and start screen session ID prompt
+    sessionFooter.textContent = `Session: ${sessionName}`;
     showScreen('question');
   } catch (err) {
     console.error('Error fetching question:', err);
